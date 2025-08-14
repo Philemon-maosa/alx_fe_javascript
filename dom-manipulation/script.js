@@ -23,7 +23,7 @@ function getCategories() {
   return ["all", ...new Set(quotes.map(q => q.category))];
 }
 
-function updateCategoryFilter() {
+function populateCategories() {
   const select = document.getElementById("categoryFilter");
   select.innerHTML = "";
   getCategories().forEach(cat => {
@@ -61,21 +61,33 @@ function newQuote() {
   }
 }
 
-// =========================
-// Filtering Function
-// =========================
-function filterQuotes() {
-  selectedCategory = document.getElementById("categoryFilter").value;
-  localStorage.setItem("selectedCategory", selectedCategory);
-  newQuote();
+// Filters all quotes in current category and shows them as a list
+function filterQuote() {
+  const filtered = selectedCategory === "all"
+    ? quotes
+    : quotes.filter(q => q.category === selectedCategory);
+
+  const display = document.getElementById("quoteDisplay");
+  if (filtered.length) {
+    display.innerHTML = filtered
+      .map(q => `${q.text} <br><small>- ${q.category}</small>`)
+      .join("<hr>");
+  } else {
+    display.textContent = "No quotes available for this category.";
+  }
 }
 
 // =========================
 // Event Handlers
 // =========================
-document.getElementById("categoryFilter").addEventListener("change", filterQuotes);
+document.getElementById("categoryFilter").addEventListener("change", function () {
+  selectedCategory = this.value;
+  localStorage.setItem("selectedCategory", selectedCategory);
+  newQuote();
+});
 
 document.getElementById("newQuote").addEventListener("click", newQuote);
+document.getElementById("filterQuote").addEventListener("click", filterQuote);
 
 document.getElementById("addQuote").addEventListener("click", function () {
   const text = document.getElementById("quoteText").value.trim();
@@ -83,7 +95,7 @@ document.getElementById("addQuote").addEventListener("click", function () {
   if (text && category) {
     quotes.push({ text, category });
     saveQuotes();
-    updateCategoryFilter();
+    populateCategories();
     document.getElementById("quoteText").value = "";
     document.getElementById("quoteCategory").value = "";
     alert("Quote added successfully!");
@@ -111,12 +123,12 @@ document.getElementById("importFile").addEventListener("change", function (event
       if (Array.isArray(importedQuotes)) {
         quotes = importedQuotes;
         saveQuotes();
-        updateCategoryFilter();
+        populateCategories();
         alert("Quotes imported successfully!");
       } else {
         alert("Invalid file format.");
       }
-    } catch {
+    } catch (err) {
       alert("Error reading file.");
     }
   };
@@ -126,7 +138,7 @@ document.getElementById("importFile").addEventListener("change", function (event
 // =========================
 // Init
 // =========================
-updateCategoryFilter();
+populateCategories();
 if (lastQuote) {
   displayQuote(lastQuote);
 } else {
