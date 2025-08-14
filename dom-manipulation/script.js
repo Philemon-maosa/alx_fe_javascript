@@ -23,7 +23,7 @@ function getCategories() {
   return ["all", ...new Set(quotes.map(q => q.category))];
 }
 
-function updateCategoryFilter() {
+function populateCategories() {
   const select = document.getElementById("categoryFilter");
   select.innerHTML = "";
   getCategories().forEach(cat => {
@@ -78,7 +78,7 @@ document.getElementById("addQuote").addEventListener("click", function () {
   if (text && category) {
     quotes.push({ text, category });
     saveQuotes();
-    updateCategoryFilter();
+    populateCategories();
     document.getElementById("quoteText").value = "";
     document.getElementById("quoteCategory").value = "";
     alert("Quote added successfully!");
@@ -102,4 +102,28 @@ document.getElementById("importFile").addEventListener("change", function (event
   const fileReader = new FileReader();
   fileReader.onload = function (e) {
     try {
-      const importedQuotes = JSON.parse(e.target
+      const importedQuotes = JSON.parse(e.target.result);
+      if (Array.isArray(importedQuotes)) {
+        quotes = importedQuotes;
+        saveQuotes();
+        populateCategories();
+        alert("Quotes imported successfully!");
+      } else {
+        alert("Invalid file format.");
+      }
+    } catch (err) {
+      alert("Error reading file.");
+    }
+  };
+  fileReader.readAsText(event.target.files[0]);
+});
+
+// =========================
+// Init
+// =========================
+populateCategories();
+if (lastQuote) {
+  displayQuote(lastQuote);
+} else {
+  newQuote();
+}
