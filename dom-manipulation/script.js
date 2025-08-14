@@ -23,7 +23,7 @@ function getCategories() {
   return ["all", ...new Set(quotes.map(q => q.category))];
 }
 
-function populateCategories() {
+function updateCategoryFilter() {
   const select = document.getElementById("categoryFilter");
   select.innerHTML = "";
   getCategories().forEach(cat => {
@@ -62,13 +62,18 @@ function newQuote() {
 }
 
 // =========================
-// Event Handlers
+// Filtering Function
 // =========================
-document.getElementById("categoryFilter").addEventListener("change", function () {
-  selectedCategory = this.value;
+function filterQuotes() {
+  selectedCategory = document.getElementById("categoryFilter").value;
   localStorage.setItem("selectedCategory", selectedCategory);
   newQuote();
-});
+}
+
+// =========================
+// Event Handlers
+// =========================
+document.getElementById("categoryFilter").addEventListener("change", filterQuotes);
 
 document.getElementById("newQuote").addEventListener("click", newQuote);
 
@@ -78,7 +83,7 @@ document.getElementById("addQuote").addEventListener("click", function () {
   if (text && category) {
     quotes.push({ text, category });
     saveQuotes();
-    populateCategories();
+    updateCategoryFilter();
     document.getElementById("quoteText").value = "";
     document.getElementById("quoteCategory").value = "";
     alert("Quote added successfully!");
@@ -106,12 +111,12 @@ document.getElementById("importFile").addEventListener("change", function (event
       if (Array.isArray(importedQuotes)) {
         quotes = importedQuotes;
         saveQuotes();
-        populateCategories();
+        updateCategoryFilter();
         alert("Quotes imported successfully!");
       } else {
         alert("Invalid file format.");
       }
-    } catch (err) {
+    } catch {
       alert("Error reading file.");
     }
   };
@@ -121,7 +126,7 @@ document.getElementById("importFile").addEventListener("change", function (event
 // =========================
 // Init
 // =========================
-populateCategories();
+updateCategoryFilter();
 if (lastQuote) {
   displayQuote(lastQuote);
 } else {
