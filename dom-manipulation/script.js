@@ -79,6 +79,7 @@ async function syncQuotes() {
   quotes.push(...serverQuotes);
   saveQuotes();
   renderCategoryOptions();
+  console.log("Quotes synced with server.");
 }
 
 // ======== DOM Elements ========
@@ -179,4 +180,46 @@ function importFromJsonFile(event) {
 
     importedQuotes.forEach(q => {
       if (!categories.includes(q.category)) {
-        categories.push(q
+        categories.push(q.category);
+      }
+    });
+
+    saveQuotes();
+    saveCategories();
+    renderCategoryOptions();
+    alert("Quotes imported successfully!");
+  };
+  fileReader.readAsText(event.target.files[0]);
+}
+
+// ======== Init ========
+loadQuotes();
+loadCategories();
+renderCategoryOptions();
+createAddQuoteForm();
+
+newQuoteBtn.addEventListener("click", showRandomQuote);
+
+// Export & Import buttons
+const exportBtn = document.createElement("button");
+exportBtn.textContent = "Export Quotes";
+exportBtn.addEventListener("click", exportQuotesToJsonFile);
+document.body.appendChild(exportBtn);
+
+const importInput = document.createElement("input");
+importInput.type = "file";
+importInput.accept = ".json";
+importInput.addEventListener("change", importFromJsonFile);
+document.body.appendChild(importInput);
+
+// Sync with server on load
+syncQuotes();
+
+// Show last viewed quote if exists
+const lastViewed = getLastViewedQuote();
+if (lastViewed) {
+  quoteDisplay.textContent = `"${lastViewed.text}" - ${lastViewed.category}`;
+}
+
+// ======== Auto-sync every 60 seconds ========
+setInterval(syncQuotes, 60000);
