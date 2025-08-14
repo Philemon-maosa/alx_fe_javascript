@@ -1,20 +1,18 @@
-// Fetch quotes from placeholder API
-async function fetchServerQuotes() {
+// Send a new quote to the server (POST)
+async function sendQuoteToServer(quote) {
   try {
-    const response = await fetch("https://jsonplaceholder.typicode.com/posts");
-    const data = await response.json();
-    // Convert posts to quote objects
-    return data.slice(0, 10).map(post => ({
-      text: post.title,
-      category: "Server"
-    }));
-  } catch (error) {
-    console.error("Error fetching server quotes:", error);
-    return [];
-  }
-}
+    const response = await fetch("https://jsonplaceholder.typicode.com/posts", {
+      method: "POST",
+      body: JSON.stringify(quote),
+      headers: {
+        "Content-Type": "application/json"
+      }
+    });
 
-// Alias for backwards compatibility
-function fetchQuotesFromServer() {
-  return fetchServerQuotes();
+    const data = await response.json();
+    console.log("Quote successfully sent to server:", data);
+    alert("Quote synced to server!");
+  } catch (error) {
+    console.error("Error sending quote to server:", error);
+  }
 }
