@@ -50,7 +50,6 @@ async function fetchServerQuotes() {
   }
 }
 
-// Alias for backwards compatibility
 function fetchQuotesFromServer() {
   return fetchServerQuotes();
 }
@@ -79,14 +78,13 @@ async function syncQuotes() {
   quotes.push(...serverQuotes);
   saveQuotes();
   renderCategoryOptions();
-  console.log("Quotes synced with server.");
+  console.log("Quotes synced with server!");
 }
 
 // ======== DOM Elements ========
 const quoteDisplay = document.getElementById("quoteDisplay");
 const newQuoteBtn = document.getElementById("newQuote");
 
-// Category selector
 const categorySelect = document.createElement("select");
 categorySelect.id = "categorySelect";
 document.body.insertBefore(categorySelect, newQuoteBtn);
@@ -200,7 +198,6 @@ createAddQuoteForm();
 
 newQuoteBtn.addEventListener("click", showRandomQuote);
 
-// Export & Import buttons
 const exportBtn = document.createElement("button");
 exportBtn.textContent = "Export Quotes";
 exportBtn.addEventListener("click", exportQuotesToJsonFile);
@@ -212,14 +209,11 @@ importInput.accept = ".json";
 importInput.addEventListener("change", importFromJsonFile);
 document.body.appendChild(importInput);
 
-// Sync with server on load
 syncQuotes();
 
-// Show last viewed quote if exists
 const lastViewed = getLastViewedQuote();
 if (lastViewed) {
   quoteDisplay.textContent = `"${lastViewed.text}" - ${lastViewed.category}`;
 }
 
-// ======== Auto-sync every 60 seconds ========
 setInterval(syncQuotes, 60000);
