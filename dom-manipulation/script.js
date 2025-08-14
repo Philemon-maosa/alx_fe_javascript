@@ -33,7 +33,7 @@ function createQuoteDisplay() {
   document.body.appendChild(quoteDisplay);
 
   if (lastQuote) {
-    quoteDisplay.innerHTML = `<strong>${lastQuote.text}</strong> <em>(${lastQuote.category})</em>`;
+    quoteDisplay.innerHTML = lastQuote.text;
   }
 
   return quoteDisplay;
@@ -75,13 +75,13 @@ function createAddQuoteForm() {
 
   const quoteInput = document.createElement("input");
   quoteInput.type = "text";
-  quoteInput.placeholder = "Enter quote text";
+  quoteInput.placeholder = "Quote text";
   quoteInput.id = "quoteText";
   document.body.appendChild(quoteInput);
 
   const categoryInput = document.createElement("input");
   categoryInput.type = "text";
-  categoryInput.placeholder = "Enter category";
+  categoryInput.placeholder = "Category";
   categoryInput.id = "quoteCategory";
   document.body.appendChild(categoryInput);
 
@@ -90,16 +90,15 @@ function createAddQuoteForm() {
   addBtn.addEventListener("click", () => {
     const text = quoteInput.value.trim();
     const category = categoryInput.value.trim();
-    if (text && category) {
-      quotes.push({ text, category });
-      saveQuotes();
-      updateCategoryOptions(document.getElementById("categorySelect"));
-      quoteInput.value = "";
-      categoryInput.value = "";
-      alert("Quote added!");
-    } else {
-      alert("Please enter both text and category.");
+    if (!text || !category) {
+      alert("Please enter both quote text and category.");
+      return;
     }
+    quotes.push({ text, category });
+    saveQuotes();
+    updateCategoryOptions(document.getElementById("categorySelect"));
+    quoteInput.value = "";
+    categoryInput.value = "";
   });
   document.body.appendChild(addBtn);
 }
@@ -107,7 +106,7 @@ function createAddQuoteForm() {
 function createImportExportButtons() {
   const exportBtn = document.createElement("button");
   exportBtn.textContent = "Export Quotes (JSON)";
-  exportBtn.addEventListener("click", exportToJsonFile);
+  exportBtn.addEventListener("click", exportQuotes);
   document.body.appendChild(exportBtn);
 
   const importInput = document.createElement("input");
@@ -118,24 +117,64 @@ function createImportExportButtons() {
 }
 
 // =========================
-// Core Functionality
+// Main Functionality
 // =========================
 function newQuote() {
   const category = document.getElementById("categorySelect").value;
-  const quote = getRandomQuote(category);
-  const quoteDisplay = document.getElementById("quoteDisplay");
+  const randomQuote = getRandomQuote(category);
+  const display = document.getElementById("quoteDisplay");
 
-  if (quote) {
-    quoteDisplay.innerHTML = `<strong>${quote.text}</strong> <em>(${quote.category})</em>`;
-    lastQuote = quote;
-    sessionStorage.setItem("lastQuoteData", JSON.stringify(quote));
-  } else {
-    quoteDisplay.innerHTML = "No quotes available for this category.";
+  if (!randomQuote) {
+    display.innerHTML = "No quotes available in this category.";
+    return;
   }
+
+  display.innerHTML = randomQuote.text;
+  sessionStorage.setItem("lastQuoteData", JSON.stringify(randomQuote));
 }
 
-function exportToJsonFile() {
+// =========================
+// Import/Export
+// =========================
+function exportQuotes() {
   const blob = new Blob([JSON.stringify(quotes, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
+
   const a = document.createElement("a");
-  a.href
+  a.href = url;
+  a.download = "quotes.json";
+  a.click();
+
+  URL.revokeObjectURL(url);
+}
+
+function importFromJsonFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const importedQuotes = JSON.parse(e.target.result);
+      if (!Array.isArray(importedQuotes)) throw new Error("Invalid JSON format");
+      quotes.push(...importedQuotes);
+      saveQuotes();
+      updateCategoryOptions(document.getElementById("categorySelect"));
+      alert("Quotes imported successfully!");
+    } catch (err) {
+      alert("Failed to import: " + err.message);
+    }
+  };
+  reader.readAsText(file);
+}
+
+// =========================
+// Init
+// =========================
+document.addEventListener("DOMContentLoaded", () => {
+  createQuoteDisplay();
+  createCategorySelect();
+  createNewQuoteButton();
+  createAddQuoteForm();
+  createImportExportButtons();
+});
